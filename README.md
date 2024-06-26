@@ -45,14 +45,17 @@ Feel free to suggest more resources via issues or pull requests!
 
 I will be updating this section regularly with my progress:
 
-### Week 1
+### Week 1 & 2
 - **Introduction to LLMs**: Read introductory materials and watched online lectures.
 - **Basic Concepts**: Learned about transformers, attention mechanisms, and basic model architectures.
 
-
+### Week 3
+- **tokenization-general-llm**: Read and learn the tokenization practical and theory.
+- **Fine-tuning**: fine-tune the first llm model.
 
 ## Projects
 
 This section contains the projects I have worked on:
+1. **First:** The first project I worked on was fine-tuning the GPT2 on Wikitxt to forcast the next token - Link of project " https://github.com/monirmo97/LLM/tree/main/Train_Test_GPT2"
 
 
