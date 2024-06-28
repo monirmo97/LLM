@@ -16,7 +16,7 @@ def load_and_prepare_data():
     tokenizer.pad_token = tokenizer.eos_token
 
     def tokenize_function(examples):
-        tokenized = tokenizer(examples["text"], padding="max_length", truncation=True, max_length=16)
+        tokenized = tokenizer(examples["text"], padding="max_length", truncation=True, max_length=32)
         tokenized["labels"] = tokenized["input_ids"].copy()
         return tokenized
 
@@ -77,24 +77,32 @@ class QLoRaLayer(torch.nn.Module):
         return torch.mm(x, self.weight + torch.mm(self.lora_a.to(torch.float32), self.lora_b.to(torch.float32)))
 
 def apply_lora(model, rank):
-    lora_layers = []
+    to_modify = []
     for name, param in model.named_parameters():
-        if 'weight' in name and param.requires_grad and len(param.size()) == 2:
-            lora_layer = LoRaLayer(param, rank)
-            lora_layers.append((name, lora_layer))
-            param.requires_grad = False
-    for name, lora_layer in lora_layers:
+        if 'weight' in name and param.requires_grad:
+            if len(param.size()) == 2:  # Ensure the weight is 2D
+                to_modify.append((name, param))
+            else:
+                print(f"Skipping {name} as it does not have 2D weight.")
+
+    for name, param in to_modify:
+        lora_layer = LoRaLayer(param, rank)
         setattr(model, name.replace('.', '_'), lora_layer)
+        param.requires_grad = False
 
 def apply_q_lora(model, rank):
-    q_lora_layers = []
+    to_modify = []
     for name, param in model.named_parameters():
-        if 'weight' in name and param.requires_grad and len(param.size()) == 2:
-            q_lora_layer = QLoRaLayer(param, rank)
-            q_lora_layers.append((name, q_lora_layer))
-            param.requires_grad = False
-    for name, q_lora_layer in q_lora_layers:
+        if 'weight' in name and param.requires_grad:
+            if len(param.size()) == 2:  # Ensure the weight is 2D
+                to_modify.append((name, param))
+            else:
+                print(f"Skipping {name} as it does not have 2D weight.")
+
+    for name, param in to_modify:
+        q_lora_layer = QLoRaLayer(param, rank)
         setattr(model, name.replace('.', '_'), q_lora_layer)
+        param.requires_grad = False
 
 def freeze_parameters(model):
     for param in model.parameters():
@@ -134,7 +142,8 @@ def train_and_evaluate_model(tokenized_train_dataset, tokenized_test_dataset, to
         metric_for_best_model="loss",
         greater_is_better=False,
         fp16=True,
-        gradient_accumulation_steps=4
+        gradient_accumulation_steps=4,
+        save_safetensors=False  # Disable strict checks for shared tensors
     )
 
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
