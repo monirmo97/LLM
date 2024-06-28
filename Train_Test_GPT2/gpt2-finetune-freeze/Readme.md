@@ -36,7 +36,7 @@ This project demonstrates how to fine-tune the GPT-2 model on a subset of the Wi
 
 1. Clone the repository:
 
-   git clone https://github.com/yourusername/gpt2-finetune-freeze.git
+   git clone the repository
    cd gpt2-finetune-freeze
 
 2. Install the required libraries:
